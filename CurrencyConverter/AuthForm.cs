@@ -15,15 +15,29 @@ namespace CurrencyConverter
     public partial class AuthForm : Form
     { 
         private List<User> users = new List<User>();
+        private bool isConnectedToDatabase = false;
         public AuthForm()
         {
             InitializeComponent();
-            Database.Connect();
+            try
+            {
+                Database.Connect();
+                isConnectedToDatabase = true;
+            }
+            catch(Exception e)
+            {
+                AuthFormErrorStatus.Text = e.Message;
+            }
 
         }
 
         private void SignInButton_Click(object sender, EventArgs e)
         {
+            if (!isConnectedToDatabase)
+            {
+                AuthFormErrorStatus.Text = "Couldn't connect to database";
+                return;
+            }
             if (LoginInput.Text == "" || PasswordInput.Text == "")
             {
                 Repository.ShowStatus(AuthFormErrorStatus, "Type login and password");
@@ -45,6 +59,11 @@ namespace CurrencyConverter
 
         private void RegisterButton_Click(object sender, EventArgs e)
         {
+            if (!isConnectedToDatabase)
+            {
+                AuthFormErrorStatus.Text = "Couldn't connect to database";
+                return;
+            }
             if (LoginInput.Text == "" || PasswordInput.Text == "" || !IsWordCorrect(LoginInput.Text) || !IsWordCorrect(PasswordInput.Text) || !Database.IsLoginUnique(LoginInput.Text))
             {
                 Repository.ShowStatus(AuthFormErrorStatus, "Type login and password. They shouldn't include % symbol. \n Login also should be unique");
@@ -57,18 +76,6 @@ namespace CurrencyConverter
             Repository.ShowStatus(AuthFormErrorStatus, "Success. Now Sign In!");
             LoginInput.Text = "";
             PasswordInput.Text = "";
-        }
-        private int CreateUniqueId()
-        {
-            int rndNumber = Repository.rnd.Next(0, Repository.N);
-            foreach (User user in users)
-            {
-                if (user.Id == rndNumber)
-                {
-                    return CreateUniqueId();
-                }
-            }
-            return rndNumber;
         }
         private bool IsWordCorrect(string word)
         {

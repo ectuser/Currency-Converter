@@ -12,8 +12,19 @@ namespace CurrencyConverter
         public static MySqlConnection connection;
         public static void Connect()
         {
-            string DBcon = "server=localhost;database=currencyconverter;uid={login};pwd={password};";
+            string login = "";
+            string password = "";
+            string DBcon = $"server=localhost;database=currencyconverter;uid={login};pwd={password};";
             connection = new MySqlConnection(DBcon);
+            try
+            {
+                connection.Open();
+                connection.Close();
+            }
+            catch(Exception e)
+            {
+                throw new Exception("Couldn't connect to database");
+            }
         }
         public static User UserSignIn(string login, string password)
         {
